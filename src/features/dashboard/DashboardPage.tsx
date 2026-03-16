@@ -1,2 +1,6 @@
-const DashboardPage = () => <div className="p-8 text-slate-100">Dashboard</div>;
+const DashboardPage = () => (
+    <div className="text-slate-100 font-mono text-sm text-slate-500">
+        — Dashboard coming soon —
+    </div>
+);
 export default DashboardPage;
