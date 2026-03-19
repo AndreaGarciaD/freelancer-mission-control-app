@@ -1,8 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import { fetchProjects, createProject, updateProject, deleteProject } from '../api/projects.api';
-import { useDebounce } from './useDebounce';
 import { usePagination } from './usePagination';
 import type { Project, ProjectPayload, ProjectStatus, ProjectPriority } from '../types/project.types';
+import { useDebouncer } from './useDebounce';
 
 export const useProjects = () => {
     const [projects, setProjects] = useState<Project[]>([]);
@@ -17,7 +17,7 @@ export const useProjects = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingProject, setEditingProject] = useState<Project | null>(null);
 
-    const debouncedSearch = useDebounce(search, 400);
+    const debouncedSearch = useDebouncer(search, 400);
     const pagination = usePagination({ initialLimit: 10 });
 
     //reset to page 1 on filter/search change
@@ -36,6 +36,8 @@ export const useProjects = () => {
                 status: statusFilter,
                 priority: priorityFilter,
             });
+            console.log('search:', debouncedSearch, 'status:', statusFilter, 'priority:', priorityFilter);
+            console.log('Fetched projects:', response.data);
             setProjects(response.data);
             setTotal(response.total);
         } catch {
