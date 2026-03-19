@@ -45,14 +45,14 @@ const ProjectForm = ({ onSubmit, defaultValues, isLoading }: ProjectFormProps) =
         },
     });
 
-    // Load clients for the dropdown
+
     useEffect(() => {
         fetchClients({ page: 1, limit: 100 })
             .then((res) => setClients(res.data))
             .catch(() => setClients([]));
     }, []);
 
-    // Populate form when editing
+
     useEffect(() => {
         if (defaultValues) {
             reset({
