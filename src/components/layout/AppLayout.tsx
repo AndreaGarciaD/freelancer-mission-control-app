@@ -3,6 +3,7 @@ import { AnimatePresence } from 'framer-motion';
 import Sidebar from './Sidebar';
 import Header from './Header';
 import PageTransition from './PageTransition';
+import ToastContainer from '../ui/ToastContainer';
 
 const AppLayout = () => {
     const location = useLocation();
@@ -22,6 +23,7 @@ const AppLayout = () => {
                     </AnimatePresence>
                 </main>
             </div>
+            <ToastContainer />
         </div>
     );
 };

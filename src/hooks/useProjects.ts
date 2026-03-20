@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { fetchProjects, createProject, updateProject, deleteProject } from '../api/projects.api';
 import { usePagination } from './usePagination';
+import { useToast } from '../store/toast.store';
 import type { Project, ProjectPayload, ProjectStatus, ProjectPriority } from '../types/project.types';
 import { useDebouncer } from './useDebounce';
 
@@ -13,14 +14,16 @@ export const useProjects = () => {
     const [statusFilter, setStatusFilter] = useState<ProjectStatus | ''>('');
     const [priorityFilter, setPriorityFilter] = useState<ProjectPriority | ''>('');
 
-    //modal state
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingProject, setEditingProject] = useState<Project | null>(null);
 
+    const [deletingId, setDeletingId] = useState<number | null>(null);
+    const [isDeleting, setIsDeleting] = useState(false);
+
+    const toast = useToast();
     const debouncedSearch = useDebouncer(search, 400);
     const pagination = usePagination({ initialLimit: 10 });
 
-    //reset to page 1 on filter/search change
     useEffect(() => {
         pagination.resetPage();
     }, [debouncedSearch, statusFilter, priorityFilter]);
@@ -36,8 +39,6 @@ export const useProjects = () => {
                 status: statusFilter,
                 priority: priorityFilter,
             });
-            console.log('search:', debouncedSearch, 'status:', statusFilter, 'priority:', priorityFilter);
-            console.log('Fetched projects:', response.data);
             setProjects(response.data);
             setTotal(response.total);
         } catch {
@@ -51,11 +52,11 @@ export const useProjects = () => {
         loadProjects();
     }, [loadProjects]);
 
-    //CRUD
     const handleCreate = useCallback(async (payload: ProjectPayload) => {
         await createProject(payload);
         await loadProjects();
         setIsModalOpen(false);
+        toast.success('Project created successfully');
     }, [loadProjects]);
 
     const handleUpdate = useCallback(async (id: number, payload: ProjectPayload) => {
@@ -63,14 +64,30 @@ export const useProjects = () => {
         await loadProjects();
         setIsModalOpen(false);
         setEditingProject(null);
+        toast.success('Project updated successfully');
     }, [loadProjects]);
 
-    const handleDelete = useCallback(async (id: number) => {
-        await deleteProject(id);
-        await loadProjects();
-    }, [loadProjects]);
+    const confirmDelete = useCallback((id: number) => {
+        setDeletingId(id);
+    }, []);
 
-    //modal helpers
+    const handleDelete = useCallback(async () => {
+        if (deletingId === null) return;
+        setIsDeleting(true);
+        try {
+            await deleteProject(deletingId);
+            await loadProjects();
+            toast.success('Project deleted');
+        } catch {
+            toast.error('Failed to delete project');
+        } finally {
+            setIsDeleting(false);
+            setDeletingId(null);
+        }
+    }, [deletingId, loadProjects]);
+
+    const cancelDelete = useCallback(() => setDeletingId(null), []);
+
     const openCreateModal = useCallback(() => {
         setEditingProject(null);
         setIsModalOpen(true);
@@ -87,33 +104,15 @@ export const useProjects = () => {
     }, []);
 
     return {
-        //data
-        projects,
-        total,
-        isLoading,
-        error,
-
-        //filters
-        search,
-        setSearch,
-        statusFilter,
-        setStatusFilter,
-        priorityFilter,
-        setPriorityFilter,
-
-        //pagination
+        projects, total, isLoading, error,
+        search, setSearch,
+        statusFilter, setStatusFilter,
+        priorityFilter, setPriorityFilter,
         pagination,
-
-        //modal
-        isModalOpen,
-        editingProject,
-        openCreateModal,
-        openEditModal,
-        closeModal,
-
-        //actions
-        handleCreate,
-        handleUpdate,
-        handleDelete,
+        isModalOpen, editingProject,
+        openCreateModal, openEditModal, closeModal,
+        handleCreate, handleUpdate,
+        confirmDelete, handleDelete, cancelDelete,
+        deletingId, isDeleting,
     };
 };

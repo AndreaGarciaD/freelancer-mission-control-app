@@ -1,9 +1,9 @@
 import { useState, useEffect, useCallback } from 'react';
 import { fetchClients, createClient, updateClient, deleteClient } from '../api/clients.api';
 import { usePagination } from './usePagination';
+import { useToast } from '../store/toast.store';
 import type { Client, ClientPayload } from '../types/client.types';
 import { useDebouncer } from './useDebounce';
-
 
 export const useClients = () => {
     const [clients, setClients] = useState<Client[]>([]);
@@ -12,19 +12,22 @@ export const useClients = () => {
     const [error, setError] = useState<string | null>(null);
     const [search, setSearch] = useState('');
 
-    //modal states
+    // Modal state
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingClient, setEditingClient] = useState<Client | null>(null);
 
-    const debouncedSearch = useDebouncer(search, 500);
+    // Confirm dialog state
+    const [deletingId, setDeletingId] = useState<number | null>(null);
+    const [isDeleting, setIsDeleting] = useState(false);
+
+    const toast = useToast();
+    const debouncedSearch = useDebouncer(search, 400);
     const pagination = usePagination({ initialLimit: 10 });
 
-    //reset to page 1 when search changes
     useEffect(() => {
         pagination.resetPage();
-    }, [debouncedSearch, pagination]);
+    }, [debouncedSearch]);
 
-    //fetch clients
     const loadClients = useCallback(async () => {
         setIsLoading(true);
         setError(null);
@@ -47,26 +50,42 @@ export const useClients = () => {
         loadClients();
     }, [loadClients]);
 
-    //CRUD
     const handleCreate = useCallback(async (payload: ClientPayload) => {
         await createClient(payload);
         await loadClients();
         setIsModalOpen(false);
+        toast.success('Client created successfully');
     }, [loadClients]);
 
     const handleUpdate = useCallback(async (id: number, payload: ClientPayload) => {
         await updateClient(id, payload);
         await loadClients();
-        setEditingClient(null);
         setIsModalOpen(false);
+        setEditingClient(null);
+        toast.success('Client updated successfully');
     }, [loadClients]);
 
-    const handleDelete = useCallback(async (id: number) => {
-        await deleteClient(id);
-        await loadClients();
-    }, [loadClients]);
+    const confirmDelete = useCallback((id: number) => {
+        setDeletingId(id);
+    }, []);
 
-    //modal handlers
+    const handleDelete = useCallback(async () => {
+        if (deletingId === null) return;
+        setIsDeleting(true);
+        try {
+            await deleteClient(deletingId);
+            await loadClients();
+            toast.success('Client deleted');
+        } catch {
+            toast.error('Failed to delete client');
+        } finally {
+            setIsDeleting(false);
+            setDeletingId(null);
+        }
+    }, [deletingId, loadClients]);
+
+    const cancelDelete = useCallback(() => setDeletingId(null), []);
+
     const openCreateModal = useCallback(() => {
         setEditingClient(null);
         setIsModalOpen(true);
@@ -78,34 +97,18 @@ export const useClients = () => {
     }, []);
 
     const closeModal = useCallback(() => {
-        setEditingClient(null);
         setIsModalOpen(false);
+        setEditingClient(null);
     }, []);
 
     return {
-        //data
-        clients,
-        total,
-        isLoading,
-        error,
-
-        //search
-        search,
-        setSearch,
-
-        //pagination
+        clients, total, isLoading, error,
+        search, setSearch,
         pagination,
-
-        //modal
-        isModalOpen,
-        editingClient,
-        openCreateModal,
-        openEditModal,
-        closeModal,
-
-        //actions
-        handleCreate,
-        handleUpdate,
-        handleDelete,
+        isModalOpen, editingClient,
+        openCreateModal, openEditModal, closeModal,
+        handleCreate, handleUpdate,
+        confirmDelete, handleDelete, cancelDelete,
+        deletingId, isDeleting,
     };
-}
+};

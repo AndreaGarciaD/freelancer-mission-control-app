@@ -9,6 +9,7 @@ import Pagination from '../../components/ui/Pagination';
 import { SkeletonRow } from '../../components/ui/Skeleton';
 import ClientForm from './ClientForm';
 import type { ClientPayload } from '../../types/client.types';
+import ConfirmDialog from '../../components/ui/ConfirmDialog';
 
 const ClientsPage = () => {
     const {
@@ -17,7 +18,9 @@ const ClientsPage = () => {
         pagination,
         isModalOpen, editingClient,
         openCreateModal, openEditModal, closeModal,
-        handleCreate, handleUpdate, handleDelete,
+        handleCreate, handleUpdate,
+        confirmDelete, handleDelete, cancelDelete,
+        deletingId, isDeleting,
     } = useClients();
 
     const totalPages = useMemo(
@@ -113,10 +116,18 @@ const ClientsPage = () => {
                                 <Button
                                     variant="danger"
                                     size="sm"
-                                    onClick={() => handleDelete(client.id)}
+                                    onClick={() => confirmDelete(client.id)}
                                 >
                                     <Trash2 size={14} />
                                 </Button>
+                                <ConfirmDialog
+                                    isOpen={deletingId !== null}
+                                    title="Delete client"
+                                    message="This will permanently delete the client and cannot be undone."
+                                    onConfirm={handleDelete}
+                                    onCancel={cancelDelete}
+                                    isLoading={isDeleting}
+                                />
                             </div>
                         </motion.div>
                     ))

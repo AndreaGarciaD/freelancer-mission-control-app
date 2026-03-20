@@ -14,6 +14,7 @@ import { STATUS_OPTIONS, PRIORITY_OPTIONS } from './project.constants';
 import type { ProjectPayload, ProjectStatus, ProjectPriority } from '../../types/project.types';
 import { clsx } from 'clsx';
 import { formatDeadLineStatus } from '../../utils/format';
+import ConfirmDialog from '../../components/ui/ConfirmDialog';
 
 const FILTER_STATUS_OPTIONS = [{ value: '', label: 'All statuses' }, ...STATUS_OPTIONS];
 const FILTER_PRIORITY_OPTIONS = [{ value: '', label: 'All priorities' }, ...PRIORITY_OPTIONS];
@@ -27,7 +28,9 @@ const ProjectsPage = () => {
         pagination,
         isModalOpen, editingProject,
         openCreateModal, openEditModal, closeModal,
-        handleCreate, handleUpdate, handleDelete,
+        handleCreate, handleUpdate,
+        confirmDelete, handleDelete, cancelDelete,
+        deletingId, isDeleting,
     } = useProjects();
 
     const totalPages = useMemo(
@@ -166,10 +169,19 @@ const ProjectsPage = () => {
                                     <Button
                                         variant="danger"
                                         size="sm"
-                                        onClick={() => handleDelete(project.id)}
+                                        onClick={() => confirmDelete(project.id)}
                                     >
                                         <Trash2 size={14} />
                                     </Button>
+
+                                    <ConfirmDialog
+                                        isOpen={deletingId !== null}
+                                        title="Delete project"
+                                        message="This will permanently delete the project and cannot be undone."
+                                        onConfirm={handleDelete}
+                                        onCancel={cancelDelete}
+                                        isLoading={isDeleting}
+                                    />
                                 </div>
                             </motion.div>
                         );
@@ -201,6 +213,7 @@ const ProjectsPage = () => {
                     onSubmit={onSubmit}
                     defaultValues={editingProject}
                 />
+
             </Modal>
         </div>
     );
