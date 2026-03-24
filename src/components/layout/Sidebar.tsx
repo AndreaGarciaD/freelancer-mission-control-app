@@ -1,9 +1,13 @@
 import { NavLink, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { LayoutDashboard, Users, FolderKanban, Terminal, PanelLeftClose, PanelLeftOpen } from 'lucide-react';
-import { useState } from 'react';
+import {
+    LayoutDashboard, Users, FolderKanban,
+    Terminal, PanelLeftClose, PanelLeftOpen,
+} from 'lucide-react';
+import { useState, useEffect } from 'react';
 import { clsx } from 'clsx';
 import { useAuthStore } from '../../store/auth.store';
+import { useUIStore } from '../../store/ui.store';
 
 const NAV_ITEMS = [
     { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -11,17 +15,20 @@ const NAV_ITEMS = [
     { to: '/projects', label: 'Projects', icon: FolderKanban },
 ];
 
-const Sidebar = () => {
-    const [collapsed, setCollapsed] = useState(false);
+const SidebarContent = ({
+    collapsed,
+    setCollapsed,
+    onNavClick,
+}: {
+    collapsed: boolean;
+    setCollapsed: (v: boolean) => void;
+    onNavClick?: () => void;
+}) => {
     const { user } = useAuthStore();
     const location = useLocation();
 
     return (
-        <motion.aside
-            animate={{ width: collapsed ? 72 : 240 }}
-            transition={{ duration: 0.3, ease: 'easeInOut' }}
-            className="relative flex flex-col h-screen bg-slate-900 border-r border-slate-800 shrink-0"
-        >
+        <div className="flex flex-col h-full">
             {/* Logo */}
             <div className="flex items-center gap-3 px-4 h-16 border-b border-slate-800 shrink-0 overflow-hidden">
                 <div className="w-8 h-8 bg-amber-400 rounded flex items-center justify-center shrink-0">
@@ -55,6 +62,7 @@ const Sidebar = () => {
                         <NavLink
                             key={to}
                             to={to}
+                            onClick={onNavClick}
                             className={clsx(
                                 'relative flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors group',
                                 isActive
@@ -97,9 +105,9 @@ const Sidebar = () => {
                 })}
 
                 {/* Collapse toggle*/}
-                <div className="pt-2 mt-2 border-t border-slate-800">
+                <div className="pt-2 mt-2 border-t border-slate-800 hidden md:block">
                     <button
-                        onClick={() => setCollapsed((c) => !c)}
+                        onClick={() => setCollapsed(!collapsed)}
                         className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-500 hover:text-slate-100 hover:bg-slate-800 transition-colors"
                     >
                         <div className="shrink-0">
@@ -156,7 +164,75 @@ const Sidebar = () => {
                     </AnimatePresence>
                 </div>
             </div>
-        </motion.aside>
+        </div>
+    );
+};
+
+const Sidebar = () => {
+    const [collapsed, setCollapsed] = useState(false);
+    const { isMobileNavOpen, closeMobileNav } = useUIStore();
+
+    const location = useLocation();
+    useEffect(() => {
+        closeMobileNav();
+    }, [location.pathname]);
+
+
+    useEffect(() => {
+        const handler = () => {
+            if (window.innerWidth >= 768) closeMobileNav();
+        };
+        window.addEventListener('resize', handler);
+        return () => window.removeEventListener('resize', handler);
+    }, []);
+
+    return (
+        <>
+            {/*Desktop sidebar*/}
+            <motion.aside
+                animate={{ width: collapsed ? 72 : 240 }}
+                transition={{ duration: 0.3, ease: 'easeInOut' }}
+                className="hidden md:flex flex-col h-screen bg-slate-900 border-r border-slate-800 shrink-0"
+            >
+                <SidebarContent
+                    collapsed={collapsed}
+                    setCollapsed={setCollapsed}
+                />
+            </motion.aside>
+
+            {/*Mobile backdrop*/}
+            <AnimatePresence>
+                {isMobileNavOpen && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.2 }}
+                        onClick={closeMobileNav}
+                        className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-40 md:hidden"
+                    />
+                )}
+            </AnimatePresence>
+
+            {/*Mobile drawer panel*/}
+            <AnimatePresence>
+                {isMobileNavOpen && (
+                    <motion.div
+                        initial={{ x: '-100%' }}
+                        animate={{ x: 0 }}
+                        exit={{ x: '-100%' }}
+                        transition={{ duration: 0.3, ease: 'easeInOut' }}
+                        className="fixed top-0 left-0 h-full w-64 bg-slate-900 border-r border-slate-800 z-50 md:hidden"
+                    >
+                        <SidebarContent
+                            collapsed={false}
+                            setCollapsed={() => { }}
+                            onNavClick={closeMobileNav}
+                        />
+                    </motion.div>
+                )}
+            </AnimatePresence>
+        </>
     );
 };
 
