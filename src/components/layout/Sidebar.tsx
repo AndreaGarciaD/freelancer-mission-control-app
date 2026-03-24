@@ -1,6 +1,6 @@
 import { NavLink, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { LayoutDashboard, Users, FolderKanban, Terminal, ChevronLeft } from 'lucide-react';
+import { LayoutDashboard, Users, FolderKanban, Terminal, PanelLeftClose, PanelLeftOpen } from 'lucide-react';
 import { useState } from 'react';
 import { clsx } from 'clsx';
 import { useAuthStore } from '../../store/auth.store';
@@ -62,7 +62,6 @@ const Sidebar = () => {
                                     : 'text-slate-400 hover:text-slate-100 hover:bg-slate-800'
                             )}
                         >
-                            {/* Active background */}
                             {isActive && (
                                 <motion.div
                                     layoutId="activeNav"
@@ -70,7 +69,6 @@ const Sidebar = () => {
                                     transition={{ duration: 0.25, ease: 'easeInOut' }}
                                 />
                             )}
-
                             <Icon
                                 size={18}
                                 className={clsx(
@@ -78,7 +76,6 @@ const Sidebar = () => {
                                     isActive ? 'text-slate-950' : 'text-slate-400 group-hover:text-slate-100'
                                 )}
                             />
-
                             <AnimatePresence>
                                 {!collapsed && (
                                     <motion.span
@@ -98,6 +95,34 @@ const Sidebar = () => {
                         </NavLink>
                     );
                 })}
+
+                {/* Collapse toggle*/}
+                <div className="pt-2 mt-2 border-t border-slate-800">
+                    <button
+                        onClick={() => setCollapsed((c) => !c)}
+                        className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-500 hover:text-slate-100 hover:bg-slate-800 transition-colors"
+                    >
+                        <div className="shrink-0">
+                            {collapsed
+                                ? <PanelLeftOpen size={18} />
+                                : <PanelLeftClose size={18} />
+                            }
+                        </div>
+                        <AnimatePresence>
+                            {!collapsed && (
+                                <motion.span
+                                    initial={{ opacity: 0, x: -8 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    exit={{ opacity: 0, x: -8 }}
+                                    transition={{ duration: 0.2 }}
+                                    className="text-sm font-medium whitespace-nowrap"
+                                >
+                                    Close
+                                </motion.span>
+                            )}
+                        </AnimatePresence>
+                    </button>
+                </div>
             </nav>
 
             {/* User info */}
@@ -124,26 +149,13 @@ const Sidebar = () => {
                                     {user?.name ?? 'User'}
                                 </p>
                                 <p className="text-slate-500 text-[10px] font-mono whitespace-nowrap truncate max-w-[130px]">
-                                    {user?.email ?? 'hello@example.com'}
+                                    {user?.email ?? ''}
                                 </p>
                             </motion.div>
                         )}
                     </AnimatePresence>
                 </div>
             </div>
-
-            {/* Collapse toggle */}
-            <button
-                onClick={() => setCollapsed((c) => !c)}
-                className="absolute -right-3 top-20 w-6 h-6 bg-slate-800 border border-slate-700 rounded-full flex items-center justify-center text-slate-400 hover:text-amber-400 hover:border-amber-400/50 transition-colors z-10"
-            >
-                <motion.div
-                    animate={{ rotate: collapsed ? 180 : 0 }}
-                    transition={{ duration: 0.3 }}
-                >
-                    <ChevronLeft size={12} />
-                </motion.div>
-            </button>
         </motion.aside>
     );
 };

@@ -1,5 +1,5 @@
 import { useLocation } from 'react-router-dom';
-import { LogOut, Bell } from 'lucide-react';
+import { LogOut } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { motion } from 'framer-motion';
 
@@ -31,9 +31,6 @@ const Header = () => {
 
             {/* Actions */}
             <div className="flex items-center gap-2">
-                <button className="w-9 h-9 rounded-lg bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-400 hover:text-amber-400 hover:border-amber-400/30 transition-colors">
-                    <Bell size={16} />
-                </button>
                 <button
                     onClick={logout}
                     className="flex items-center gap-2 px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-slate-400 hover:text-red-400 hover:border-red-400/30 transition-colors text-sm font-mono"
