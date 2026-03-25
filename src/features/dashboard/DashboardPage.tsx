@@ -13,7 +13,6 @@ import DeadlineItem from './DeadlineItem';
 import DashboardSkeleton from './DashboardSkeleton';
 import Badge from '../../components/ui/Badge';
 import Button from '../../components/ui/Button';
-import { clsx } from 'clsx';
 
 const DashboardPage = () => {
     const { stats, upcomingDeadlines, recentProjects, isLoading, error } = useDashboard();
@@ -55,7 +54,7 @@ const DashboardPage = () => {
             </motion.div>
 
             {/* Metric cards */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
                 <MetricCard
                     label="Total Clients"
                     value={stats.totalClients}
@@ -87,7 +86,7 @@ const DashboardPage = () => {
             </div>
 
             {/* Panels */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
 
                 {/* Upcoming deadlines */}
                 <motion.div

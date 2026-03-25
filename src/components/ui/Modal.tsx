@@ -24,13 +24,13 @@ const Modal = ({ isOpen, onClose, title, children }: ModalProps) => (
                 />
 
                 {/* Modal panel */}
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto">
                     <motion.div
                         initial={{ opacity: 0, scale: 0.95, y: 16 }}
                         animate={{ opacity: 1, scale: 1, y: 0 }}
                         exit={{ opacity: 0, scale: 0.95, y: 16 }}
                         transition={{ duration: 0.25, ease: 'easeOut' }}
-                        className="w-full max-w-lg bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl"
+                        className="w-full max-w-lg bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl my-4"
                     >
                         {/* Header */}
                         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800">

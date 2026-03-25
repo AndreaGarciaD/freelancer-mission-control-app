@@ -10,11 +10,11 @@ import Pagination from '../../components/ui/Pagination';
 import Badge from '../../components/ui/Badge';
 import { SkeletonRow } from '../../components/ui/Skeleton';
 import ProjectForm from './ProjectForm';
+import ConfirmDialog from '../../components/ui/ConfirmDialog';
 import { STATUS_OPTIONS, PRIORITY_OPTIONS } from './project.constants';
 import type { ProjectPayload, ProjectStatus, ProjectPriority } from '../../types/project.types';
 import { clsx } from 'clsx';
 import { formatDeadLineStatus } from '../../utils/format';
-import ConfirmDialog from '../../components/ui/ConfirmDialog';
 
 const FILTER_STATUS_OPTIONS = [{ value: '', label: 'All statuses' }, ...STATUS_OPTIONS];
 const FILTER_PRIORITY_OPTIONS = [{ value: '', label: 'All priorities' }, ...PRIORITY_OPTIONS];
@@ -47,10 +47,11 @@ const ProjectsPage = () => {
     };
 
     return (
-        <div className="space-y-6">
-            {/* Top bar */}
-            <div className="flex flex-wrap items-center gap-3">
-                <div className="w-64">
+        <div className="space-y-4 md:space-y-6">
+
+            {/* Top bar*/}
+            <div className="flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-3">
+                <div className="w-full sm:w-64">
                     <Input
                         placeholder="Search projects..."
                         value={search}
@@ -58,20 +59,22 @@ const ProjectsPage = () => {
                         icon={<Search size={15} />}
                     />
                 </div>
-                <Select
-                    options={FILTER_STATUS_OPTIONS}
-                    value={statusFilter}
-                    onChange={(e) => setStatusFilter(e.target.value as ProjectStatus | '')}
-                    className="w-40"
-                />
-                <Select
-                    options={FILTER_PRIORITY_OPTIONS}
-                    value={priorityFilter}
-                    onChange={(e) => setPriorityFilter(e.target.value as ProjectPriority | '')}
-                    className="w-40"
-                />
-                <div className="ml-auto">
-                    <Button onClick={openCreateModal}>
+                <div className="grid grid-cols-2 sm:flex gap-2 sm:gap-3">
+                    <Select
+                        options={FILTER_STATUS_OPTIONS}
+                        value={statusFilter}
+                        onChange={(e) => setStatusFilter(e.target.value as ProjectStatus | '')}
+                        className="w-full sm:w-40"
+                    />
+                    <Select
+                        options={FILTER_PRIORITY_OPTIONS}
+                        value={priorityFilter}
+                        onChange={(e) => setPriorityFilter(e.target.value as ProjectPriority | '')}
+                        className="w-full sm:w-40"
+                    />
+                </div>
+                <div className="sm:ml-auto">
+                    <Button onClick={openCreateModal} className="w-full sm:w-auto">
                         <Plus size={16} />
                         New project
                     </Button>
@@ -85,112 +88,93 @@ const ProjectsPage = () => {
                 </div>
             )}
 
-            {/* Table */}
+            {/*table*/}
             <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden">
-                {/* Header */}
-                <div className="grid grid-cols-[1.5fr_1fr_auto_auto_auto_auto] gap-4 px-6 py-3 border-b border-slate-800 bg-slate-950/50">
-                    {['Title', 'Client', 'Status', 'Priority', 'Deadline', 'Actions'].map((col) => (
-                        <span key={col} className="font-mono text-xs text-slate-500 uppercase tracking-wider">
-                            {col}
-                        </span>
-                    ))}
-                </div>
+                <div className="overflow-x-auto">
+                    <div className="min-w-[700px]">
 
-                {/* Rows */}
-                {isLoading ? (
-                    Array.from({ length: 5 }).map((_, i) => <SkeletonRow key={i} />)
-                ) : projects.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center py-16 gap-3">
-                        <div className="w-12 h-12 rounded-full bg-slate-800 flex items-center justify-center">
-                            <FolderKanban size={20} className="text-slate-600" />
+                        {/* Header */}
+                        <div className="grid grid-cols-[1.5fr_1fr_auto_auto_auto_auto] gap-4 px-6 py-3 border-b border-slate-800 bg-slate-950/50">
+                            {['Title', 'Client', 'Status', 'Priority', 'Deadline', 'Actions'].map((col) => (
+                                <span key={col} className="font-mono text-xs text-slate-500 uppercase tracking-wider">
+                                    {col}
+                                </span>
+                            ))}
                         </div>
-                        <p className="text-slate-500 font-mono text-sm">No projects found</p>
-                        {(search || statusFilter || priorityFilter) && (
-                            <p className="text-slate-600 text-xs">Try adjusting your filters</p>
+
+                        {/* Rows */}
+                        {isLoading ? (
+                            Array.from({ length: 5 }).map((_, i) => <SkeletonRow key={i} />)
+                        ) : projects.length === 0 ? (
+                            <div className="flex flex-col items-center justify-center py-16 gap-3">
+                                <div className="w-12 h-12 rounded-full bg-slate-800 flex items-center justify-center">
+                                    <FolderKanban size={20} className="text-slate-600" />
+                                </div>
+                                <p className="text-slate-500 font-mono text-sm">No projects found</p>
+                                {(search || statusFilter || priorityFilter) && (
+                                    <p className="text-slate-600 text-xs">Try adjusting your filters</p>
+                                )}
+                            </div>
+                        ) : (
+                            projects.map((project, i) => {
+                                const deadlineStatus = project.deadline
+                                    ? formatDeadLineStatus(project.deadline)
+                                    : null;
+
+                                return (
+                                    <motion.div
+                                        key={project.id}
+                                        initial={{ opacity: 0, y: 8 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        transition={{ delay: i * 0.04 }}
+                                        className="grid grid-cols-[1.5fr_1fr_auto_auto_auto_auto] gap-4 px-6 py-4 border-b border-slate-800 last:border-0 hover:bg-slate-800/40 transition-colors items-center group"
+                                    >
+                                        <div>
+                                            <p className="text-slate-100 text-sm font-medium truncate">
+                                                {project.title}
+                                            </p>
+                                            {project.description && (
+                                                <p className="text-slate-600 text-xs truncate mt-0.5">
+                                                    {project.description}
+                                                </p>
+                                            )}
+                                        </div>
+
+                                        <span className="text-slate-400 text-sm truncate">
+                                            {project.client_name ?? '—'}
+                                        </span>
+
+                                        <Badge label={project.status} variant={project.status} />
+                                        <Badge label={project.priority} variant={project.priority} />
+
+                                        <span className={clsx(
+                                            'text-xs font-mono whitespace-nowrap',
+                                            deadlineStatus?.variant === 'danger' && 'text-red-400',
+                                            deadlineStatus?.variant === 'warning' && 'text-amber-400',
+                                            deadlineStatus?.variant === 'normal' && 'text-slate-400',
+                                            !deadlineStatus && 'text-slate-600'
+                                        )}>
+                                            {deadlineStatus?.label ?? '—'}
+                                        </span>
+
+                                        <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <Button variant="ghost" size="sm" onClick={() => openEditModal(project)}>
+                                                <Pencil size={14} />
+                                            </Button>
+                                            <Button variant="danger" size="sm" onClick={() => confirmDelete(project.id)}>
+                                                <Trash2 size={14} />
+                                            </Button>
+                                        </div>
+                                    </motion.div>
+                                );
+                            })
                         )}
                     </div>
-                ) : (
-                    projects.map((project, i) => {
-                        const deadlineStatus = project.deadline
-                            ? formatDeadLineStatus(project.deadline)
-                            : null;
-
-                        return (
-                            <motion.div
-                                key={project.id}
-                                initial={{ opacity: 0, y: 8 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: i * 0.04 }}
-                                className="grid grid-cols-[1.5fr_1fr_auto_auto_auto_auto] gap-4 px-6 py-4 border-b border-slate-800 last:border-0 hover:bg-slate-800/40 transition-colors items-center group"
-                            >
-                                <div>
-                                    <p className="text-slate-100 text-sm font-medium truncate">
-                                        {project.title}
-                                    </p>
-                                    {project.description && (
-                                        <p className="text-slate-600 text-xs truncate mt-0.5">
-                                            {project.description}
-                                        </p>
-                                    )}
-                                </div>
-
-                                <span className="text-slate-400 text-sm truncate">
-                                    {project.client_name ?? '—'}
-                                </span>
-
-                                <Badge
-                                    label={project.status}
-                                    variant={project.status}
-                                />
-
-                                <Badge
-                                    label={project.priority}
-                                    variant={project.priority}
-                                />
-
-                                <span className={clsx(
-                                    'text-xs font-mono whitespace-nowrap',
-                                    deadlineStatus?.variant === 'danger' && 'text-red-400',
-                                    deadlineStatus?.variant === 'warning' && 'text-amber-400',
-                                    deadlineStatus?.variant === 'normal' && 'text-slate-400',
-                                    !deadlineStatus && 'text-slate-600'
-                                )}>
-                                    {deadlineStatus?.label ?? '—'}
-                                </span>
-
-                                <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                    <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        onClick={() => openEditModal(project)}
-                                    >
-                                        <Pencil size={14} />
-                                    </Button>
-                                    <Button
-                                        variant="danger"
-                                        size="sm"
-                                        onClick={() => confirmDelete(project.id)}
-                                    >
-                                        <Trash2 size={14} />
-                                    </Button>
-
-                                    <ConfirmDialog
-                                        isOpen={deletingId !== null}
-                                        title="Delete project"
-                                        message="This will permanently delete the project and cannot be undone."
-                                        onConfirm={handleDelete}
-                                        onCancel={cancelDelete}
-                                        isLoading={isDeleting}
-                                    />
-                                </div>
-                            </motion.div>
-                        );
-                    })
-                )}
+                </div>
             </div>
 
             {/* Footer */}
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
                 <p className="font-mono text-xs text-slate-500">
                     {total} {total === 1 ? 'project' : 'projects'} total
                 </p>
@@ -203,18 +187,22 @@ const ProjectsPage = () => {
                 />
             </div>
 
-            {/* Modal */}
             <Modal
                 isOpen={isModalOpen}
                 onClose={closeModal}
                 title={editingProject ? 'Edit project' : 'New project'}
             >
-                <ProjectForm
-                    onSubmit={onSubmit}
-                    defaultValues={editingProject}
-                />
-
+                <ProjectForm onSubmit={onSubmit} defaultValues={editingProject} />
             </Modal>
+
+            <ConfirmDialog
+                isOpen={deletingId !== null}
+                title="Delete project"
+                message="This will permanently delete the project and cannot be undone."
+                onConfirm={handleDelete}
+                onCancel={cancelDelete}
+                isLoading={isDeleting}
+            />
         </div>
     );
 };
