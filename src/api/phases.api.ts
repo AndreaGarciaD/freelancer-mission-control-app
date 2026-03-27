@@ -17,6 +17,6 @@ export const updatePhase = async (id: number, projectId: number, payload: Partia
     return data;
 };
 
-export const deletePhase = async (id: number, projectId: number): Promise<void> => {
+export const deletePhase = async (projectId: number, id: number): Promise<void> => {
     await api.delete(`/projects/${projectId}/phases/${id}`);
 }
