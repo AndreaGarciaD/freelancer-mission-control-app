@@ -23,3 +23,8 @@ export const updateProject = async (id: number, payload: ProjectPayload): Promis
 export const deleteProject = async (id: number): Promise<void> => {
     await api.delete(`/projects/${id}`);
 }
+
+export const fetchProjectById = async (id: number): Promise<Project> => {
+    const { data } = await api.get<Project>(`/projects/${id}`);
+    return data;
+};

@@ -15,6 +15,7 @@ import { STATUS_OPTIONS, PRIORITY_OPTIONS } from './project.constants';
 import type { ProjectPayload, ProjectStatus, ProjectPriority } from '../../types/project.types';
 import { clsx } from 'clsx';
 import { formatDeadLineStatus } from '../../utils/format';
+import { useNavigate } from 'react-router-dom';
 
 const FILTER_STATUS_OPTIONS = [{ value: '', label: 'All statuses' }, ...STATUS_OPTIONS];
 const FILTER_PRIORITY_OPTIONS = [{ value: '', label: 'All priorities' }, ...PRIORITY_OPTIONS];
@@ -32,6 +33,8 @@ const ProjectsPage = () => {
         confirmDelete, handleDelete, cancelDelete,
         deletingId, isDeleting,
     } = useProjects();
+
+    const navigate = useNavigate();
 
     const totalPages = useMemo(
         () => pagination.totalPages(total),
@@ -130,9 +133,12 @@ const ProjectsPage = () => {
                                         className="grid grid-cols-[1.5fr_1fr_auto_auto_auto_auto] gap-4 px-6 py-4 border-b border-slate-800 last:border-0 hover:bg-slate-800/40 transition-colors items-center group"
                                     >
                                         <div>
-                                            <p className="text-slate-100 text-sm font-medium truncate">
+                                            <button
+                                                onClick={() => navigate(`/projects/${project.id}`)}
+                                                className="text-slate-100 text-sm font-medium truncate hover:text-amber-400 transition-colors text-left"
+                                            >
                                                 {project.title}
-                                            </p>
+                                            </button>
                                             {project.description && (
                                                 <p className="text-slate-600 text-xs truncate mt-0.5">
                                                     {project.description}
